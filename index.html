@@ -1,0 +1,666 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Diya Patel — Portfolio</title>
+<style>
+  :root{
+    --bg: #031a3d;            /* deep navy */
+    --panel: rgba(255,255,255,0.03);
+    --text: #f7fbff;         /* off-white */
+    --accent: #58c1ff;       /* skyblue */
+    --accent-2: #ff4d4d;     /* red */
+    --glass: rgba(255,255,255,0.05);
+    --glow: 0 6px 28px rgba(88,193,255,0.12), 0 0 40px rgba(3,26,61,0.08);
+    --card-radius: 14px;
+    --max-width: 1100px;
+    scroll-behavior: smooth;
+  }
+
+  /* Dark mode variables -- toggled by JS by adding .light on body */
+  body.light {
+    --bg: linear-gradient(180deg,#e9f7ff 0%, #fefefe 100%);
+    --panel: rgba(3,26,61,0.03);
+    --text: #031a3d;
+    --accent: #0353a4;
+    --accent-2: #d62828;
+    --glass: rgba(3,26,61,0.06);
+    --glow: 0 8px 36px rgba(88,193,255,0.12);
+  }
+
+  html,body{
+    height:100%;
+    margin:0;
+    font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    background: var(--bg);
+    color:var(--text);
+    -webkit-font-smoothing:antialiased;
+    -moz-osx-font-smoothing:grayscale;
+    overflow-y:scroll;
+  }
+
+  /* canvas covers background */
+  #bg-canvas{
+    position:fixed;
+    inset:0;
+    z-index:0;
+    pointer-events:none;
+    mix-blend-mode:screen; /* glowy look */
+  }
+
+  /* container */
+  .wrap{
+    max-width:var(--max-width);
+    margin:48px auto;
+    padding:28px;
+    position:relative;
+    z-index:2;
+  }
+
+  header{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:16px;
+    margin-bottom:22px;
+  }
+
+  .brand{
+    display:flex;
+    align-items:center;
+    gap:12px;
+  }
+
+  .logo{
+    width:48px; height:48px; border-radius:10px;
+    background:linear-gradient(135deg,var(--accent),var(--accent-2));
+    display:flex; align-items:center; justify-content:center;
+    box-shadow:var(--glow);
+    font-weight:700;
+    color:#fff;
+    letter-spacing:0.6px;
+  }
+
+  nav{
+    display:flex;
+    gap:14px;
+    align-items:center;
+  }
+
+  nav a{
+    color:var(--text);
+    text-decoration:none;
+    padding:8px 12px;
+    border-radius:10px;
+    font-weight:600;
+    transition: transform .18s ease, box-shadow .18s ease, color .18s;
+  }
+
+  nav a:hover{
+    transform:translateY(-3px);
+    box-shadow:0 8px 24px rgba(0,0,0,0.2);
+    color:var(--accent);
+  }
+
+  .controls{
+    display:flex;
+    gap:10px;
+    align-items:center;
+  }
+
+  .btn{
+    border:0;
+    padding:8px 12px;
+    border-radius:10px;
+    cursor:pointer;
+    background:var(--glass);
+    color:var(--text);
+    font-weight:600;
+    backdrop-filter: blur(6px);
+    transition: transform .12s, box-shadow .12s;
+  }
+
+  .btn:active{ transform:translateY(1px); }
+  .btn:hover{ box-shadow:var(--glow); }
+
+  /* hero / home */
+  .hero{
+    display:grid;
+    grid-template-columns: 1fr 320px;
+    align-items:center;
+    gap:28px;
+    padding:40px;
+    background: linear-gradient(180deg, rgba(255,255,255,0.02), transparent);
+    border-radius:18px;
+    box-shadow:var(--glow);
+    position:relative;
+    overflow:hidden;
+  }
+
+  .hero .center{
+    text-align:left;
+  }
+
+  .title{
+    font-size:36px;
+    font-weight:800;
+    margin:0 0 8px 0;
+    letter-spacing:0.2px;
+    text-shadow: 0 6px 28px rgba(88,193,255,0.08);
+  }
+
+  .subtitle{
+    font-size:20px;
+    margin:0 0 18px 0;
+    opacity:0.95;
+    display:flex;
+    gap:12px;
+    align-items:center;
+  }
+
+  .rotating-titles{
+    display:inline-block;
+    font-weight:700;
+    color:var(--accent);
+    text-shadow:0 2px 10px rgba(88,193,255,.08);
+    transform-origin:left center;
+  }
+
+  /* small animated underline / glow */
+  .title-underline{
+    width:140px; height:6px; border-radius:999px;
+    background:linear-gradient(90deg,var(--accent),var(--accent-2));
+    margin-top:14px;
+    box-shadow:0 6px 30px rgba(88,193,255,0.12);
+    animation: pulse 2.8s infinite;
+  }
+  @keyframes pulse{
+    0%{ transform:scaleX(0.96); opacity:.9 }
+    50%{ transform:scaleX(1.04); opacity:1 }
+    100%{ transform:scaleX(0.96); opacity:.9 }
+  }
+
+  .photo{
+    width:320px; height:320px; border-radius:18px;
+    background:linear-gradient(180deg, rgba(255,255,255,0.03), rgba(88,193,255,0.03));
+    display:flex; align-items:center; justify-content:center;
+    border:2px solid rgba(255,255,255,0.04);
+    box-shadow: 0 18px 50px rgba(3,26,61,0.5);
+    overflow:hidden;
+    position:relative;
+  }
+
+  .photo img{
+    width:100%; height:100%; object-fit:cover;
+    transition: transform .9s ease;
+  }
+
+  .photo:hover img{ transform:scale(1.06) rotate(-1deg); }
+
+  /* sections */
+  section{
+    margin-top:34px;
+    padding:28px;
+    background:var(--panel);
+    border-radius:12px;
+    backdrop-filter: blur(6px);
+  }
+
+  .grid{
+    display:grid;
+    grid-template-columns: repeat(auto-fit,minmax(240px,1fr));
+    gap:20px;
+  }
+
+  .card{
+    padding:18px;
+    border-radius:12px;
+    background:linear-gradient(180deg, rgba(255,255,255,0.02), transparent);
+    transition: transform .22s ease, box-shadow .22s ease, border .22s ease;
+    border:1px solid rgba(255,255,255,0.03);
+  }
+
+  .card:hover{
+    transform:translateY(-8px) scale(1.01);
+    box-shadow: 0 18px 50px rgba(3,26,61,0.45), 0 2px 12px rgba(88,193,255,0.06);
+    border:1px solid rgba(88,193,255,0.18);
+  }
+
+  .proj-title{ font-weight:800; font-size:18px; margin:0 0 6px 0; }
+  .proj-desc{ margin:6px 0 12px 0; opacity:0.9; line-height:1.4; }
+  .tag{ display:inline-block; padding:6px 10px; border-radius:999px; font-size:13px; margin-right:8px; background:rgba(88,193,255,0.08); color:var(--accent); font-weight:700; }
+
+  /* contact */
+  .contact-row{ display:flex; gap:12px; flex-wrap:wrap; }
+  .input{
+    flex:1 1 220px;
+    padding:12px 14px;
+    border-radius:10px;
+    border:1px solid rgba(255,255,255,0.04);
+    background:transparent;
+    color:var(--text);
+  }
+
+  .btn-primary{
+    background: linear-gradient(90deg,var(--accent),var(--accent-2));
+    color:#fff;
+    border:0;
+    padding:10px 16px;
+    border-radius:10px;
+    cursor:pointer;
+    font-weight:800;
+    box-shadow:var(--glow);
+  }
+
+  /* footer */
+  footer{ text-align:center; padding:18px; margin-top:26px; opacity:0.9; }
+
+  /* rotating titles small animation */
+  .rotator{
+    display:inline-block;
+    min-width:200px;
+  }
+  .rotator span{
+    display:block;
+    opacity:0;
+    transform:translateY(8px);
+    transition:all .45s cubic-bezier(.2,.9,.3,1);
+  }
+  .rotator span.active{
+    opacity:1;
+    transform:translateY(0);
+  }
+
+  /* modal */
+  .modal-backdrop{
+    position:fixed; inset:0; background:rgba(0,0,0,0.6); display:none;
+    align-items:center; justify-content:center; z-index:40;
+  }
+  .modal{
+    background:var(--panel);
+    padding:20px; border-radius:12px; width:90%; max-width:720px;
+    box-shadow: 0 24px 60px rgba(3,26,61,.6);
+  }
+  .close{
+    float:right; background:transparent; border:0; font-weight:800; font-size:18px; cursor:pointer; color:var(--text);
+  }
+
+  /* responsive */
+  @media (max-width:860px){
+    .hero{ grid-template-columns: 1fr; text-align:center; }
+    .photo{ margin:8px auto 0 auto; }
+    .title { font-size:30px; }
+  }
+
+  /* small live micro-interaction on scroll: fade-up */
+  .animate{
+    transform:translateY(12px);
+    opacity:0;
+    transition: transform .7s cubic-bezier(.2,.9,.3,1), opacity .7s;
+  }
+  .animate.inview{
+    transform:none;
+    opacity:1;
+  }
+
+  /* focus outlines */
+  a:focus, button:focus, input:focus, textarea:focus{
+    outline:3px solid rgba(88,193,255,0.12);
+    outline-offset:3px;
+  }
+</style>
+</head>
+<body>
+<canvas id="bg-canvas" aria-hidden="true"></canvas>
+
+<div class="wrap">
+  <header>
+    <div class="brand">
+      <div class="logo" aria-hidden="true">DP</div>
+      <div>
+        <div style="font-weight:800">Diya Patel</div>
+        <div style="font-size:12px; opacity:0.85">Software & Creative Developer</div>
+      </div>
+    </div>
+
+    <nav aria-label="Main navigation">
+      <a href="#home">Home</a>
+      <a href="#about">About</a>
+      <a href="#projects">Projects</a>
+      <a href="#contact">Contact</a>
+    </nav>
+
+    <div class="controls">
+      <button id="theme-toggle" class="btn" aria-pressed="false" title="Toggle light/dark">Toggle</button>
+      <a class="btn" href="#projects">See Projects</a>
+    </div>
+  </header>
+
+  <!-- HOME -->
+  <main id="home" class="hero" role="main" aria-labelledby="welcome">
+    <div class="center">
+      <h1 id="welcome" class="title">Welcome my portfolio</h1>
+      <p class="subtitle">
+        <strong style="font-size:20px;">Hi — I'm <span style="color:var(--accent); font-weight:900;">Diya Patel</span></strong>
+        <span style="margin-left:10px; opacity:.8;">•</span>
+        <span class="rotator" aria-live="polite" style="margin-left:12px;">
+          <span class="rotating-titles rotator-inner">
+            <span class="rt active">Software Development</span>
+            <span class="rt">Creative Developer</span>
+            <span class="rt">UI / UX Enthusiast</span>
+          </span>
+        </span>
+      </p>
+
+      <p style="max-width:620px; opacity:0.95; line-height:1.5" class="animate">
+        I build thoughtful, accessible, and beautiful web experiences — combining solid engineering with creative design.
+        Scroll down to see projects, or hover and click to interact.
+      </p>
+
+      <div style="margin-top:18px;" class="title-underline" aria-hidden="true"></div>
+
+      <div style="margin-top:18px;">
+        <a class="btn-primary btn" href="#contact">Hire Me</a>
+        <button id="learn-more" class="btn" style="margin-left:12px;">More about me</button>
+      </div>
+    </div>
+
+    <div class="photo" aria-hidden="false" title="Your photo">
+      <!-- Replace src with your own photo -->
+      <img src="image/InShot_20250918_144345856.jpg" alt="Diya Patel photo placeholder">
+    </div>
+  </main>
+
+  <!-- ABOUT -->
+  <section id="about" class="animate" aria-labelledby="about-title">
+    <h2 id="about-title" style="margin-top:0">About me</h2>
+    <div class="grid">
+      <div class="card">
+        <h3 style="margin:0 0 8px 0;">About</h3>
+        <p style="margin:0; line-height:1.5">
+          I'm Diya — I build clean frontends and resilient backends. I enjoy solving UX problems, making performant websites, and bringing ideas to life.
+        </p>
+      </div>
+      <div class="card">
+        <h3 style="margin:0 0 8px 0;">Skills</h3>
+        <div style="margin-top:8px;">
+          <span class="tag">JavaScript</span>
+          <span class="tag">HTML & CSS</span>
+          <span class="tag">React</span>
+          <span class="tag">Node.js</span>
+          <span class="tag">Design</span>
+        </div>
+      </div>
+      <div class="card">
+        <h3 style="margin:0 0 8px 0;">Work</h3>
+        <p style="margin:0">I craft web apps, UI components, and prototypes. I’m currently taking lectures to deepen my design and animation skills.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- PROJECTS -->
+  <section id="projects" class="animate" aria-labelledby="projects-title">
+    <h2 id="projects-title" style="margin-top:0">Projects</h2>
+    <div class="grid">
+      <article class="card project-card" data-title="Project Alpha" data-desc="A modern single-page app that demonstrates smooth animations and responsive UI." tabindex="0" role="button" aria-pressed="false">
+        <div class="proj-title">Project Alpha</div>
+        <div class="proj-desc">Single-page app with micro-interactions and performant rendering.</div>
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-top:10px;">
+          <div>
+            <span class="tag">React</span><span class="tag">Canvas</span>
+          </div>
+          <button class="btn">View</button>
+        </div>
+      </article>
+
+      <article class="card project-card" data-title="Design Portfolio" data-desc="A small design system and component library with theming support." tabindex="0" role="button" aria-pressed="false">
+        <div class="proj-title">Design Portfolio</div>
+        <div class="proj-desc">A component-driven design library with light/dark themes.</div>
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-top:10px;">
+          <div>
+            <span class="tag">Figma</span><span class="tag">CSS</span>
+          </div>
+          <button class="btn">View</button>
+        </div>
+      </article>
+
+      <article class="card project-card" data-title="E-commerce Mock" data-desc="A demo store UI with cart and checkout flows." tabindex="0" role="button" aria-pressed="false">
+        <div class="proj-title">E-commerce Mock</div>
+        <div class="proj-desc">Demo store UI with animated interactions and accessibility features.</div>
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-top:10px;">
+          <div>
+            <span class="tag">Node</span><span class="tag">Express</span>
+          </div>
+          <button class="btn">View</button>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <!-- CONTACT -->
+  <section id="contact" class="animate" aria-labelledby="contact-title">
+    <h2 id="contact-title" style="margin-top:0">Contact</h2>
+    <p>Want to work together? Send a quick message.</p>
+    <form id="contact-form" onsubmit="return false;">
+      <div class="contact-row">
+        <input required class="input" placeholder="Your name" id="cname">
+        <input required class="input" placeholder="Your email" id="cemail" type="email">
+      </div>
+      <div style="margin-top:12px;">
+        <textarea id="cmessage" class="input" placeholder="Message" rows="5" style="min-height:120px; width:100%;"></textarea>
+      </div>
+      <div style="margin-top:12px; display:flex; gap:12px; align-items:center;">
+        <button id="send-btn" class="btn-primary" type="submit">Send message</button>
+        <div id="send-msg" style="opacity:0; transition:opacity .25s;">✅ Sent (demo)</div>
+      </div>
+    </form>
+  </section>
+
+  <footer>
+    © <strong>Diya Patel</strong> · Built with ❤️ & JS small animations
+  </footer>
+</div>
+
+<!-- Modal for project details -->
+<div id="modal" class="modal-backdrop" role="dialog" aria-hidden="true">
+  <div class="modal" role="document">
+    <button class="close" id="modal-close" aria-label="Close">&times;</button>
+    <h3 id="modal-title">Project</h3>
+    <p id="modal-desc"></p>
+  </div>
+</div>
+
+<script>
+/* ---------------------------
+   Theme toggle (light/dark)
+   --------------------------- */
+const themeBtn = document.getElementById('theme-toggle');
+const body = document.body;
+const userPrefersLight = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches;
+if (localStorage.getItem('theme') === 'light' || (!localStorage.getItem('theme') && userPrefersLight)) {
+  body.classList.add('light');
+  themeBtn.setAttribute('aria-pressed','true');
+}
+themeBtn.addEventListener('click', () => {
+  const isLight = body.classList.toggle('light');
+  themeBtn.setAttribute('aria-pressed', isLight ? 'true' : 'false');
+  localStorage.setItem('theme', isLight ? 'light' : 'dark');
+});
+
+/* ---------------------------
+   Rotating titles
+   --------------------------- */
+(function(){
+  const items = Array.from(document.querySelectorAll('.rt'));
+  let idx = 0;
+  function rotate(){
+    items.forEach((el,i)=> el.classList.toggle('active', i===idx));
+    idx = (idx+1) % items.length;
+  }
+  setInterval(rotate, 2200);
+})();
+
+/* ---------------------------
+   Small on-scroll animations (fade-up)
+   --------------------------- */
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) e.target.classList.add('inview');
+  });
+}, { threshold: 0.12 });
+
+document.querySelectorAll('.animate').forEach(el => observer.observe(el));
+
+/* ---------------------------
+   Modal / project click events
+   --------------------------- */
+const modal = document.getElementById('modal');
+const mtitle = document.getElementById('modal-title');
+const mdesc = document.getElementById('modal-desc');
+const modalClose = document.getElementById('modal-close');
+
+function openModal(title, desc){
+  mtitle.textContent = title;
+  mdesc.textContent = desc;
+  modal.style.display = 'flex';
+  modal.setAttribute('aria-hidden','false');
+}
+
+function closeModal(){
+  modal.style.display = 'none';
+  modal.setAttribute('aria-hidden','true');
+}
+
+document.querySelectorAll('.project-card').forEach(card=>{
+  card.addEventListener('click', () => {
+    openModal(card.dataset.title, card.dataset.desc);
+  });
+  card.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      openModal(card.dataset.title, card.dataset.desc);
+    }
+  });
+});
+
+modalClose.addEventListener('click', closeModal);
+modal.addEventListener('click', (e)=>{
+  if (e.target === modal) closeModal();
+});
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+/* ---------------------------
+   Contact form demo click
+   --------------------------- */
+const sendBtn = document.getElementById('send-btn');
+sendBtn.addEventListener('click', () => {
+  // Demo only: show a friendly message
+  document.getElementById('send-msg').style.opacity = 1;
+  setTimeout(()=> document.getElementById('send-msg').style.opacity = 0, 2500);
+});
+
+/* ---------------------------
+   Learn more button scroll
+   --------------------------- */
+document.getElementById('learn-more').addEventListener('click', () => {
+  document.getElementById('about').scrollIntoView({ behavior: 'smooth' });
+});
+
+/* ---------------------------
+   Background particles (canvas)
+   continuous, subtle glow
+   --------------------------- */
+(function(){
+  const canvas = document.getElementById('bg-canvas');
+  const ctx = canvas.getContext('2d');
+  let w = canvas.width = innerWidth;
+  let h = canvas.height = innerHeight;
+  const count = Math.round((w*h)/45000); // scale by area
+  const particles = [];
+
+  function rand(min,max){ return Math.random()*(max-min)+min; }
+
+  function make(){
+    for(let i=0;i<count;i++){
+      particles.push({
+        x: rand(0,w),
+        y: rand(0,h),
+        r: rand(0.6,2.8),
+        vx: rand(-0.25,0.25),
+        vy: rand(-0.15,0.15),
+        alpha: rand(0.05,0.25),
+        hue: rand(190,215) // sky-blueish
+      });
+    }
+  }
+  make();
+
+  function resize(){
+    w = canvas.width = innerWidth;
+    h = canvas.height = innerHeight;
+  }
+  addEventListener('resize', resize);
+
+  function step(){
+    ctx.clearRect(0,0,w,h);
+
+    // gentle gradient overlay for depth
+    const g = ctx.createLinearGradient(0,0,w,h);
+    g.addColorStop(0, 'rgba(88,193,255,0.03)');
+    g.addColorStop(1, 'rgba(3,26,61,0.04)');
+    ctx.fillStyle = g;
+    ctx.fillRect(0,0,w,h);
+
+    particles.forEach(p=>{
+      // move
+      p.x += p.vx;
+      p.y += p.vy;
+      // wrap-around
+      if(p.x < -10) p.x = w + 10;
+      if(p.x > w + 10) p.x = -10;
+      if(p.y < -10) p.y = h + 10;
+      if(p.y > h + 10) p.y = -10;
+      // draw
+      ctx.beginPath();
+      const grad = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.r*6);
+      const hueString = 'hsl(' + p.hue + ', 90%, 60%)';
+      grad.addColorStop(0, `rgba(88,193,255,${p.alpha})`);
+      grad.addColorStop(0.25, `rgba(88,193,255,${p.alpha*0.6})`);
+      grad.addColorStop(1, 'rgba(88,193,255,0)');
+      ctx.fillStyle = grad;
+      ctx.arc(p.x, p.y, p.r*6, 0, Math.PI*2);
+      ctx.fill();
+    });
+
+    requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+
+  // subtle pointer interaction: push nearby particles on click
+  addEventListener('pointerdown', (ev)=>{
+    const mx = ev.clientX, my = ev.clientY;
+    particles.forEach(p=>{
+      const dx = p.x - mx, dy = p.y - my;
+      const d = Math.sqrt(dx*dx + dy*dy);
+      if (d < 140){
+        p.vx += (dx/d) * 0.5;
+        p.vy += (dy/d) * 0.5;
+        p.alpha = Math.min(0.6, p.alpha + 0.15);
+      }
+    });
+  });
+})();
+
+/* ---------------------------
+   Accessibility: reduce motion respect
+   --------------------------- */
+const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
+if (mq && mq.matches) {
+  // stop animations / heavy transitions
+  document.querySelectorAll('canvas').forEach(c => c.style.display='none');
+  document.querySelectorAll('*').forEach(n => n.style.transition='none');
+}
+</script>
+</body>
+</html>
